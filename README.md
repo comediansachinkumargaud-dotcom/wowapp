@@ -1,1 +1,406 @@
-# wowapp
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Founder Sachin | Chaos Elite Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <style>
+        :root {
+            --bg: #020202;
+            --primary: #ff0055;
+            --secondary: #00f2fe;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 255, 255, 0.1);
+            --neon-shadow: 0 0 25px rgba(255, 0, 85, 0.5);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: white;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #bg-mesh {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: 
+                radial-gradient(circle at 15% 15%, #30000e 0%, transparent 35%),
+                radial-gradient(circle at 85% 85%, #00282b 0%, transparent 35%);
+            z-index: -1;
+        }
+
+        /* Splash Screen */
+        #splash {
+            position: fixed; inset: 0; background: #000;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 1000; transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .splash-text {
+            font-size: clamp(2.2rem, 9vw, 4.5rem); font-weight: 900;
+            text-align: center; color: white;
+            text-shadow: 0 0 40px var(--primary);
+            line-height: 1.1;
+        }
+
+        .loader-ring {
+            width: 75px; height: 75px; border: 5px solid var(--glass);
+            border-top: 5px solid var(--primary); border-radius: 50%;
+            margin-top: 35px; animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* App Card */
+        .app-card {
+            display: none; width: 92%; max-width: 440px;
+            background: var(--glass);
+            backdrop-filter: blur(45px);
+            -webkit-backdrop-filter: blur(45px);
+            border: 1px solid var(--border);
+            border-radius: 50px;
+            padding: 40px;
+            box-shadow: 0 60px 130px rgba(0,0,0,0.95), inset 0 0 40px rgba(255,255,255,0.02);
+            text-align: center;
+            position: relative;
+        }
+
+        .active-card { display: block !important; }
+
+        .founder-tag {
+            font-size: 0.75rem; letter-spacing: 7px; color: var(--secondary);
+            text-transform: uppercase; margin-bottom: 25px; font-weight: 800;
+        }
+
+        .stats-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 25px;
+        }
+
+        .stat-item {
+            background: rgba(0,0,0,0.5); padding: 12px; border-radius: 20px;
+            border: 1px solid var(--border); font-size: 0.9rem; font-weight: 700;
+        }
+
+        .progress-track {
+            width: 100%; height: 6px; background: rgba(255,255,255,0.05);
+            border-radius: 10px; margin-bottom: 40px; overflow: hidden;
+        }
+        #progress-fill {
+            width: 0%; height: 100%; background: linear-gradient(90deg, var(--secondary), var(--primary));
+            transition: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #q-text {
+            font-size: 4.5rem; font-weight: 900; margin: 30px 0;
+            background: linear-gradient(to bottom, #fff, #999);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(255,255,255,0.1));
+        }
+
+        .options-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .btn-opt {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+            padding: 26px; border-radius: 30px; color: white; font-weight: 800;
+            font-size: 1.6rem; cursor: pointer; transition: 0.25s;
+        }
+
+        .btn-opt:hover { background: rgba(255,255,255,0.05); }
+        .btn-opt:active { transform: scale(0.92); }
+        .btn-opt.correct { background: #00ff8844; border-color: #00ff88; box-shadow: 0 0 35px #00ff8844; }
+        .btn-opt.wrong { background: #ff005544; border-color: #ff0055; box-shadow: 0 0 35px #ff005544; }
+
+        .controls { display: flex; gap: 15px; margin-top: 40px; }
+        .btn-main {
+            flex: 1; padding: 22px; border-radius: 25px; border: none;
+            font-weight: 900; cursor: pointer; transition: 0.3s;
+            font-size: 1.1rem; text-transform: uppercase;
+        }
+        .btn-next { background: white; color: black; box-shadow: 0 10px 30px rgba(255,255,255,0.15); }
+        .btn-hint { background: var(--glass); color: white; border: 1px solid var(--border); opacity: 0.3; pointer-events: none; }
+        .btn-hint.active { opacity: 1; pointer-events: auto; background: rgba(0, 242, 254, 0.15); border-color: var(--secondary); }
+
+        #feedback-msg { margin-top: 25px; font-weight: 900; font-size: 1.4rem; min-height: 32px; letter-spacing: 1px; }
+        #sol-overlay { margin-top: 15px; font-size: 0.9rem; color: var(--secondary); display: none; padding: 15px; border-radius: 18px; background: rgba(0,242,254,0.08); border: 1px solid rgba(0,242,254,0.15); }
+
+        .result-score { font-size: 7rem; font-weight: 900; color: var(--secondary); margin: 20px 0; line-height: 1; }
+    </style>
+</head>
+<body>
+
+<div id="bg-mesh"></div>
+
+<!-- SPLASH SCREEN -->
+<div id="splash">
+    <div class="splash-text animate__animated animate__pulse animate__infinite">Kyu Re<br>MadharChod</div>
+    <div class="loader-ring"></div>
+    <p style="margin-top: 30px; font-size: 0.75rem; letter-spacing: 8px; opacity: 0.5;">CHAOS ENGINE PRO v4.0</p>
+</div>
+
+<!-- WELCOME CARD -->
+<div class="app-card animate__animated animate__zoomIn" id="welcome-card">
+    <div class="founder-tag">Founder Sachin Elite</div>
+    <div style="font-size: 5rem; margin-bottom: 20px;">👑</div>
+    <h1 style="margin: 0; font-size: 2.8rem; font-weight: 900;">CHAOS PRO</h1>
+    <p style="opacity: 0.6; margin-bottom: 40px; font-size: 1rem;">Logic sirf answer ke baad hi khulega!</p>
+    
+    <button class="btn-main btn-next" onclick="startApp()">Enter Chaos</button>
+</div>
+
+<!-- QUIZ CARD -->
+<div class="app-card" id="quiz-card">
+    <div class="founder-tag">Chaos Challenge</div>
+    <div class="stats-grid">
+        <div class="stat-item">⭐ <span id="score">0</span></div>
+        <div class="stat-item" id="timer-box">⏱️ <span id="timer">10</span>s</div>
+        <div class="stat-item">🪙 <span id="coins">0</span></div>
+    </div>
+    <div class="progress-track"><div id="progress-fill"></div></div>
+    
+    <div id="q-text" class="animate__animated">0 + 0</div>
+    
+    <div class="options-container" id="options"></div>
+    
+    <div id="feedback-msg" class="animate__animated"></div>
+    <div id="sol-overlay" class="animate__animated animate__fadeInUp"></div>
+    
+    <div class="controls">
+        <button class="btn-main btn-hint" id="hint-btn" onclick="revealHint()">Logic 🔓</button>
+        <button class="btn-main btn-next" onclick="nextQuestion()">Next ➜</button>
+    </div>
+</div>
+
+<!-- END CARD -->
+<div class="app-card" id="end-card">
+    <div style="font-size: 6rem;">💀</div>
+    <h2 style="margin:0;">FINAL SCORE</h2>
+    <div class="result-score" id="final-score">0</div>
+    <p id="rank-msg" style="margin-bottom: 40px; font-weight: 900; font-size: 1.4rem;"></p>
+    <button class="btn-main btn-next" onclick="location.reload()">Reboot System</button>
+</div>
+
+<script>
+    // --- AUDIO ENGINE ---
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playSound(freq, type, duration, vol = 0.1) {
+        if (!audioCtx) audioCtx = new AudioCtx();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    const sfx = {
+        click: () => playSound(800, 'sine', 0.1),
+        correct: () => { playSound(650, 'sine', 0.2); setTimeout(() => playSound(950, 'sine', 0.3), 100); },
+        wrong: () => playSound(130, 'sawtooth', 0.6, 0.05),
+        tick: () => playSound(450, 'square', 0.05, 0.02)
+    };
+
+    // --- GAME LOGIC ---
+    let game = {
+        score: 0, coins: 0, currentQ: 0, maxQ: 20,
+        timeLeft: 10, timer: null,
+        ans: 0, logic: "", canAns: true, answered: false
+    };
+
+    // Splash Transition
+    setTimeout(() => {
+        document.getElementById('splash').style.opacity = '0';
+        setTimeout(() => {
+            document.getElementById('splash').style.display = 'none';
+            showCard('welcome-card');
+        }, 800);
+    }, 3000);
+
+    function showCard(id) {
+        document.querySelectorAll('.app-card').forEach(c => c.classList.remove('active-card'));
+        document.getElementById(id).classList.add('active-card');
+    }
+
+    function startApp() {
+        sfx.click();
+        game.score = 0; game.coins = 0; game.currentQ = 0;
+        showCard('quiz-card');
+        nextQuestion();
+    }
+
+    function speak(txt) {
+        if(!window.speechSynthesis) return;
+        speechSynthesis.cancel();
+        const m = new SpeechSynthesisUtterance(txt);
+        m.pitch = 1.3; m.rate = 1.1;
+        speechSynthesis.speak(m);
+    }
+
+    function generateChaos() {
+        let a = Math.floor(Math.random() * 15) + 1;
+        let b = Math.floor(Math.random() * 15) + 1;
+        let type = Math.floor(Math.random() * 7); // Increased variety
+        
+        let q = "", res = 0, log = "";
+
+        switch(type) {
+            case 0: q = `${a} + ${b}`; res = a + b; log = "Ekdum normal math tha!"; break;
+            case 1: q = `${a} + ${b}`; res = a + b + 7; log = "Sachin ne +7 add kiya!"; break;
+            case 2: q = `${a} + ${b}`; res = a + b - 3; log = "Chaos offset -3 tha!"; break;
+            case 3: q = `${a} × ${b}`; res = (a * b) + 2; log = "Multiply karke +2 bonus!"; break;
+            case 4: 
+                let m = new Date().getMinutes();
+                q = `${a} + Min`; res = a + m; log = `Is waqt ke minutes (${m}) add karne the!`;
+                break;
+            case 5: q = `${a} + ${b}`; res = a + b - 1; log = "Sachin ka tax -1!"; break;
+            case 6: q = `${a} + ${b}`; res = a + b + 5; log = "Lucky number +5 add kiya!"; break;
+        }
+        return { q, a: res, l: log };
+    }
+
+    function nextQuestion() {
+        sfx.click();
+        if(game.currentQ >= game.maxQ) { endGame(); return; }
+
+        game.currentQ++;
+        game.canAns = true;
+        game.answered = false;
+        
+        let data = generateChaos();
+        game.ans = data.a;
+        game.logic = data.l;
+
+        // Reset UI Components
+        const hintBtn = document.getElementById('hint-btn');
+        hintBtn.classList.remove('active');
+        hintBtn.innerText = "Logic 🔒";
+        document.getElementById('sol-overlay').style.display = 'none';
+        document.getElementById('feedback-msg').innerText = "";
+        document.getElementById('q-text').innerText = data.q;
+        document.getElementById('q-text').className = "animate__animated animate__fadeInDown";
+        document.getElementById('progress-fill').style.width = (game.currentQ / game.maxQ) * 100 + "%";
+
+        // Random Options Generation
+        let opts = new Set([game.ans]);
+        while(opts.size < 4) opts.add(game.ans + Math.floor(Math.random()*10) - 5);
+        
+        let container = document.getElementById('options');
+        container.innerHTML = "";
+        [...opts].sort(() => Math.random() - 0.5).forEach(o => {
+            let b = document.createElement('button');
+            b.className = "btn-opt animate__animated animate__zoomIn";
+            b.innerText = o;
+            b.onclick = () => check(b, o);
+            container.appendChild(b);
+        });
+
+        startTimer();
+    }
+
+    function startTimer() {
+        clearInterval(game.timer);
+        game.timeLeft = 10;
+        updateTimerUI();
+        game.timer = setInterval(() => {
+            game.timeLeft--;
+            updateTimerUI();
+            if(game.timeLeft <= 3) sfx.tick();
+            if(game.timeLeft <= 0) { clearInterval(game.timer); timeout(); }
+        }, 1000);
+    }
+
+    function updateTimerUI() {
+        document.getElementById('timer').innerText = game.timeLeft;
+        document.getElementById('timer-box').style.color = game.timeLeft < 4 ? 'var(--primary)' : 'white';
+    }
+
+    function check(btn, val) {
+        if(!game.canAns) return;
+        game.canAns = false;
+        game.answered = true;
+        clearInterval(game.timer);
+
+        // Unlock Logic Button after action
+        const hintBtn = document.getElementById('hint-btn');
+        hintBtn.classList.add('active');
+        hintBtn.innerText = "Logic 🔓";
+
+        let fb = document.getElementById('feedback-msg');
+        fb.classList.remove('animate__shakeX', 'animate__bounceIn');
+        void fb.offsetWidth; // Reset animation
+
+        if(val === game.ans) {
+            sfx.correct();
+            game.score++; game.coins += 25;
+            btn.classList.add('correct');
+            fb.innerText = "JIYO LALA! ✅";
+            fb.style.color = "#00ff88";
+            fb.classList.add('animate__bounceIn');
+            speak("Oh yaaa! Sachin is very happy!");
+        } else {
+            sfx.wrong();
+            game.coins = Math.max(0, game.coins - 10);
+            btn.classList.add('wrong');
+            fb.innerText = "CHUD GAYE GURU! 💀";
+            fb.style.color = "var(--primary)";
+            fb.classList.add('animate__shakeX');
+            speak("Kyu re madhar chod!");
+            revealCorrect();
+        }
+        
+        document.getElementById('score').innerText = game.score;
+        document.getElementById('coins').innerText = game.coins;
+    }
+
+    function revealCorrect() {
+        document.querySelectorAll('.btn-opt').forEach(b => {
+            if(parseInt(b.innerText) === game.ans) b.classList.add('correct');
+        });
+    }
+
+    function timeout() {
+        game.canAns = false;
+        game.answered = true;
+        sfx.wrong();
+        document.getElementById('hint-btn').classList.add('active');
+        let fb = document.getElementById('feedback-msg');
+        fb.innerText = "TIME UP! CHUD GAYE GURU! 💀";
+        fb.style.color = "var(--primary)";
+        fb.classList.add('animate__shakeX');
+        revealCorrect();
+        speak("Bahut dheele ho sachin!");
+    }
+
+    function revealHint() {
+        if(!game.answered) return;
+        sfx.click();
+        const overlay = document.getElementById('sol-overlay');
+        overlay.innerText = "Logic: " + game.logic;
+        overlay.style.display = 'block';
+    }
+
+    function endGame() {
+        showCard('end-card');
+        document.getElementById('final-score').innerText = game.score;
+        let msg = game.score > 15 ? "ASLI FOUNDER TUM HO!" : 
+                  game.score > 8 ? "DIMAAG CHAL RAHA HAI!" : "KYU RE... PHIR SE KAR!";
+        document.getElementById('rank-msg').innerText = msg;
+        document.getElementById('rank-msg').style.color = game.score > 10 ? 'var(--secondary)' : 'var(--primary)';
+    }
+</script>
+</body>
+</html>
+
